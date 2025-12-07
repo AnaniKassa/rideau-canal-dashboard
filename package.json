@@ -1,8 +1,8 @@
 {
-  "name": "web-dashboard",
+  "name": "rideau-canal-dashboard",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Backend for Rideau Canal monitoring dashboard",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\"",
     "start": "node server.js",
