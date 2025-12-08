@@ -66,16 +66,16 @@ function updateLocationCards(locations) {
 
         // Update metrics
         document.getElementById(`ice-${locationKey}`).textContent =
-            location.avgIceThickness.toFixed(1);
+            location.avg_ice_thickness.toFixed(1);
         document.getElementById(`temp-${locationKey}`).textContent =
-            location.avgSurfaceTemperature.toFixed(1);
+            location.avg_surface_temperature.toFixed(1);
         document.getElementById(`snow-${locationKey}`).textContent =
             location.maxSnowAccumulation.toFixed(1);
 
         // Update safety status
         const statusBadge = document.getElementById(`status-${locationKey}`);
-        statusBadge.textContent = location.safetyStatus;
-        statusBadge.className = `safety-badge ${location.safetyStatus.toLowerCase()}`;
+        statusBadge.textContent = location.safety_status;
+        statusBadge.className = `safety-badge ${location.safety_status.toLowerCase()}`;
     });
 }
 
@@ -106,7 +106,7 @@ function updateLastUpdateTime() {
  */
 async function updateCharts() {
     try {
-        const locations = ["Dow's Lake", "Fifth Avenue", "NAC"];
+        const locations = ["dowslake", "fifthave", "nac"];
         const colors = {
             "Dow's Lake": 'rgb(75, 192, 192)',
             "Fifth Avenue": 'rgb(255, 99, 132)',
@@ -116,9 +116,8 @@ async function updateCharts() {
         // Fetch historical data for all locations
         const historicalData = await Promise.all(
             locations.map(async (location) => {
-                const response = await fetch(
-                    `${API_BASE_URL}/api/history/${encodeURIComponent(location)}?limit=12`
-                );
+                const response = await fetch(`${API_BASE_URL}/api/history/${location}?limit=12`);
+
                 const data = await response.json();
                 return { location, data: data.data };
             })
@@ -127,7 +126,7 @@ async function updateCharts() {
         // Prepare chart data
         const iceDatasets = historicalData.map(({ location, data }) => ({
             label: location,
-            data: data.map(d => d.avgIceThickness),
+            data: data.map(d => d.avg_ice_thickness),
             borderColor: colors[location],
             backgroundColor: colors[location] + '33',
             tension: 0.4,
@@ -136,7 +135,7 @@ async function updateCharts() {
 
         const tempDatasets = historicalData.map(({ location, data }) => ({
             label: location,
-            data: data.map(d => d.avgSurfaceTemperature),
+            data: data.map(d => d.avg_surface_temperature),
             borderColor: colors[location],
             backgroundColor: colors[location] + '33',
             tension: 0.4,
@@ -145,7 +144,7 @@ async function updateCharts() {
 
         // Get time labels from first location's data
         const labels = historicalData[0].data.map(d =>
-            new Date(d.windowEndTime).toLocaleTimeString('en-CA', {
+            new Date(d.event_time).toLocaleTimeString('en-CA', {
                 hour: '2-digit',
                 minute: '2-digit'
             })
@@ -234,9 +233,9 @@ async function updateCharts() {
  */
 function getLocationKey(location) {
     const keyMap = {
-        "Dow's Lake": "dows",
-        "Fifth Avenue": "fifth",
-        "NAC": "nac"
+        "dowslake": "dows",
+        "fifthave": "fifth",
+        "nac": "nac"
     };
     return keyMap[location] || location.toLowerCase().replace(/[^a-z]/g, '');
 }
