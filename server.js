@@ -1,3 +1,17 @@
+
+//Function to normalize QUERY
+function normalizeLocation(raw) {
+    if (!raw) return "";
+    const loc = raw.toLowerCase();
+
+    if (loc.includes("dow")) return "dowslake";
+    if (loc.includes("fifth")) return "fifthave";
+    if (loc.includes("nac")) return "nac";
+
+    return loc.replace(/[^a-z]/g, '');
+}
+
+
 /**
  * Rideau Canal Monitoring Dashboard - Backend Server (CORRECTED)
  * Serves the dashboard and provides API endpoints for real-time data
@@ -37,9 +51,9 @@ app.get('/api/latest', async (req, res) => {
         for (const location of locations) {
             // Query without subquery - get all records for location, sort client-side
             const querySpec = {
-                query: "SELECT * FROM c WHERE c.location = @location",
+                query: "SELECT * FROM c WHERE LOWER(c.location) LIKE @location",
                 parameters: [
-                    { name: "@location", value: location }
+                    { name: "@location", value: `%${location}%` }
                 ]
             };
 
@@ -80,10 +94,8 @@ app.get('/api/history/:location', async (req, res) => {
         const limit = parseInt(req.query.limit) || 12; // Last hour (12 * 5 min)
 
         const querySpec = {
-            query: "SELECT * FROM c WHERE c.location = @location",
-            parameters: [
-                { name: "@location", value: location }
-            ]
+            query: "SELECT * FROM c WHERE LOWER(c.location) LIKE @location",
+            parameters: [{ name: "@location", value: `%${location}%` }]
         };
 
         const { resources } = await container.items
@@ -123,10 +135,8 @@ app.get('/api/status', async (req, res) => {
         for (const location of locations) {
             // Simple query without subquery
             const querySpec = {
-                query: "SELECT c.location, c.safetyStatus, c.event_time FROM c WHERE c.location = @location",
-                parameters: [
-                    { name: "@location", value: location }
-                ]
+                query: "SELECT c.location, c.safety_status, c.event_time FROM c WHERE LOWER(c.location) LIKE @location",
+                parameters: [{ name: "@location", value: `%${location}%` }]
             };
 
             const { resources } = await container.items
@@ -143,8 +153,8 @@ app.get('/api/status', async (req, res) => {
         }
 
         // Determine overall status
-        const overallStatus = statuses.every(s => s.safetyStatus === 'Safe') ? 'Safe' :
-            statuses.some(s => s.safetyStatus === 'Unsafe') ? 'Unsafe' : 'Caution';
+        const overallStatus = statuses.every(s => s.safety_status === 'Safe') ? 'Safe' :
+            statuses.some(s => s.safety_status === 'Unsafe') ? 'Unsafe' : 'Caution';
 
         res.json({
             success: true,

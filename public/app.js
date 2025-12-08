@@ -1,3 +1,10 @@
+// Config location
+const displayNames = {
+    dowslake: "Dow's Lake",
+    fifthave: "Fifth Avenue",
+    nac: "NAC"
+};
+
 /**
  * Rideau Canal Dashboard - Frontend Application
  * Handles data fetching, UI updates, and chart rendering
@@ -70,7 +77,7 @@ function updateLocationCards(locations) {
         document.getElementById(`temp-${locationKey}`).textContent =
             location.avg_surface_temperature.toFixed(1);
         document.getElementById(`snow-${locationKey}`).textContent =
-            location.maxSnowAccumulation.toFixed(1);
+            location.max_snow_accumulation.toFixed(1);
 
         // Update safety status
         const statusBadge = document.getElementById(`status-${locationKey}`);
@@ -108,9 +115,9 @@ async function updateCharts() {
     try {
         const locations = ["dowslake", "fifthave", "nac"];
         const colors = {
-            "Dow's Lake": 'rgb(75, 192, 192)',
-            "Fifth Avenue": 'rgb(255, 99, 132)',
-            "NAC": 'rgb(54, 162, 235)'
+            "dowslake": 'rgb(75, 192, 192)',
+            "fifthave": 'rgb(255, 99, 132)',
+            "nac": 'rgb(54, 162, 235)'
         };
 
         // Fetch historical data for all locations
@@ -125,7 +132,7 @@ async function updateCharts() {
 
         // Prepare chart data
         const iceDatasets = historicalData.map(({ location, data }) => ({
-            label: location,
+            label: displayNames[location] || location,
             data: data.map(d => d.avg_ice_thickness),
             borderColor: colors[location],
             backgroundColor: colors[location] + '33',
@@ -134,7 +141,7 @@ async function updateCharts() {
         }));
 
         const tempDatasets = historicalData.map(({ location, data }) => ({
-            label: location,
+            label: displayNames[location] || location,
             data: data.map(d => d.avg_surface_temperature),
             borderColor: colors[location],
             backgroundColor: colors[location] + '33',
@@ -232,13 +239,18 @@ async function updateCharts() {
  * Convert location name to key for DOM IDs
  */
 function getLocationKey(location) {
-    const keyMap = {
-        "dowslake": "dows",
-        "fifthave": "fifth",
-        "nac": "nac"
-    };
-    return keyMap[location] || location.toLowerCase().replace(/[^a-z]/g, '');
+    if (!location) return "";
+
+    const loc = location.toLowerCase();
+
+    if (loc.includes("dow")) return "dows";
+    if (loc.includes("fifth")) return "fifth";
+    if (loc.includes("nac")) return "nac";
+
+    // fallback – sanitize string
+    return loc.replace(/[^a-z]/g, '');
 }
+
 
 /**
  * Show error message (you can enhance this with a toast notification)
